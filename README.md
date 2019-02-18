@@ -1,102 +1,96 @@
-# react-http-client
-ReactPHP async HTTP client, minimal dependencies:
-https://reactphp.org/
+# Shuchkin/SimpleMail 0.7.11
+A simple mail composer, phpmailer alternative, smtp client.
 
 ## Basic Usage
 ```php
-$loop = \React\EventLoop\Factory::create();
-
-$http = new \Shuchkin\ReactHTTP\Client( $loop );
-
-$http->get( 'https://tools.ietf.org/rfc/rfc2068.txt' )->then(
-	function( $content ) {
-		echo $content;
-	},
-	function ( \Exception $ex ) {
-		echo 'HTTP error '.$ex->getCode().' '.$ex->getMessage();
-	}
-);
-
-$loop->run();
+$mail = new Shuchkin\SimpleMail();
+$mail->setFrom('example@example.com')
+	->setTo('sergey.shuchkin@gmail.com')
+	->setSubject('Test SimpleMail')
+	->setText('Hi, Sergey!')
+	->send();
 ```
-
-## Post
+## Fabric
 ```php
-$loop = \React\EventLoop\Factory::create();
+// setup mail
+$mail = new Shuchkin\SimpleMail();
+$mail->setFrom('example@example.com', 'Example');
+ 
+// fabric method to( $toEmail )
+$mail->to('sergey.shuchkin@gmail.com')
+	->setSubject('Account activation')
+	->setHTML('<html><body><p><b>Your account has activated!</b></p></body></html>', true)
+	->send();
 
-$http = new \Shuchkin\ReactHTTP\Client( $loop );
-
-$http->post( 'https://reqres.in/api/users', '{"name": "morpheus","job": "leader"}' )->then(
-	function ( $content ) {
-		echo $content;
-	},
-	function ( \Exception $ex ) {
-		echo 'HTTP error '.$ex->getCode().' '.$ex->getMessage();
-	}
-);
-
-$loop->run();
-
-// {"name":"morpheus","job":"leader","id":"554","createdAt":"2018-12-17T10:31:29.469Z"}
+// fabric method compose( $toEmail, $subject, $text )	
+$mail->compose('admin@example.com', 'New Account', 'http://example.com/useradmin/123')->send();
 ```
-
-## Send headers
+## SMTP
 ```php
-$loop = \React\EventLoop\Factory::create();
-$http = new \Shuchkin\ReactHTTP\Client( $loop );
+$mail = new Shuchkin\SimpleMail('smtp', [
+	'host' => 'ssl://smtp.yandex.ru',
+    'port'     => 465,
+    'username' => 'test@yandex.ru',
+    'password' => 'test'
+]);
 
-$http->get('https://jigsaw.w3.org/HTTP/TE/foo.txt',['User-Agent' => 'ReactPHP Awesome'] )->then(
-	function ( $content ) {
-		echo $content;
-	},
-	function ( \Exception $ex ) {
-		echo 'HTTP error '.$ex->getCode().' '.$ex->getMessage();
-	}
-);
-$loop->run();																					
+$mail->setFrom('test@yandex.ru)
+	->setTo('sergey.shuchkin@gmail.com')
+	->setSubject('Test SMTP')
+	->setText('Yandex SMTP secured server')
+	->send();
 ```
-
-## Read chunks
+## Attachments & reply
 ```php
-$loop = \React\EventLoop\Factory::create();
-
-$http = new \Shuchkin\ReactHTTP\Client( $loop );
-$http->get( 'https://jigsaw.w3.org/HTTP/ChunkedScript' )->then(
-	function () {
-		echo PHP_EOL . 'Mission complete';
-	},
-	function ( \Exception $ex ) {
-		echo 'ERROR '.$ex->getCode().' '.$ex->getMessage();
-	}
-);
-
-$http->on('chunk', function( $chunk ) {
-	echo PHP_EOL.'-- CHUNK='.$chunk;
+$mail = new Shuchkin\SimpleMail();
+$mail->setFrom('example@example.com')
+	->setTo('sergey.shuchkin@gmail.com')
+	->setSubject('Test attachments')
+	->setHTML('<html><body><p>See attached price list.</p><p><img src="logo.jpg" /> Logo</p></body></html>')
+	->attach( __DIR__.'/doc/PriceList.pdf')
+	->attach( __DIR__.'/images/logo400x300.jpg', 'logo.jpg')
+	->setReply('manager@example.com')
+	->send();
+```
+## Priority & custom headers
+```php
+$mail = new Shuchkin\SimpleMail();
+$mail->setFrom('example@example.com')
+	->setTo('sergey.shuchkin@gmail.com')
+	->setSubject('WARNING!')
+	->setText('SERVER DOWN!')
+	->setPriority('urgent')
+	->setCustomHeaders(['Cc' => 'admin@exmple.com'])
+	->send();
+```
+## Custom transport
+```php
+$mail = new Shuchkin\SimpleMail( function( $mail, $encoded ) {
+	print_r( $encoded );	
 });
+$mail->setFrom('example@example.com')
+	->setTo('sergey.shuchkin@gmail.com')
+	->setSubject('WARNING!')
+	->setText('SERVER DOWN!')
+	->send();
 
-$loop->run();
-```
-
-## Get headers & debug
-```php
-$loop = \React\EventLoop\Factory::create();
-
-$http = new \Shuchkin\ReactHTTP\Client( $loop );
-
-$http->request('GET','https://reqres.in/api/users')->then(
-	function( \Shuchkin\ReactHTTP\Client $client ) {
-		// dump response headers
-		print_r( $client->headers );
-		// dump content
-		echo PHP_EOL . $client->content;
-	},
-	function ( \Exception $ex ) {
-		echo 'ERROR '.$ex->getCode().' '.$ex->getMessage();
-	}
-);
-// enable debug mode
-$http->on('debug', function( $s ) { echo trim($s).PHP_EOL; } );
-$loop->run();
+/*
+Array
+(
+    [from] => example@example.com
+    [to] => sergey.shuchkin@gmail.com
+    [subject] => =?UTF-8?B?V0FSTklORyE=?=
+    [message] => SERVER DOWN!
+    [headers] => To: sergey.shuchkin@gmail.com
+Subject: =?UTF-8?B?V0FSTklORyE=?=
+X-Mailer: PHP/7.2.14
+MIME-Version: 1.0
+From: example@example.com
+Reply-To: example@example.com
+Date: Mon, 18 Feb 2019 13:17:28 +0000
+Content-Type: text/plain; charset="UTF-8"
+)
+*/
 ```
 
 ## Install
@@ -107,5 +101,7 @@ The recommended way to install this library is [through Composer](https://getcom
 This will install the latest supported version:
 
 ```bash
-$ composer require shuchkin/react-http-client
+$ composer require shuchkin/simplemail
 ```
+## History
+2019-02-18 v0.7.11 Initial release 

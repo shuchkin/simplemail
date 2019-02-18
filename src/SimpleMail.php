@@ -112,18 +112,18 @@ class SimpleMail {
 		return $this->fromName;
 	}
 
-	public function setReply( $email, $name = false ) {
+	public function setReplyTo( $email, $name = false ) {
 		$this->replyEmail = $email;
 		$this->replyName  = $name;
 
 		return $this;
 	}
 
-	public function getReplyEmail() {
+	public function getReplyToEmail() {
 		return $this->replyEmail;
 	}
 
-	public function getReplyName() {
+	public function getReplyToName() {
 		return $this->replyName;
 	}
 
@@ -180,8 +180,8 @@ class SimpleMail {
 		return $this;
 	}
 
-	public function attach( $attachment ) {
-		$this->attachments[ basename( $attachment ) ] = $attachment;
+	public function attach( $attachment, $inlineFileName = '' ) {
+		$this->attachments[ $inlineFileName ?: basename( $attachment ) ] = $attachment;
 
 		return $this;
 	}

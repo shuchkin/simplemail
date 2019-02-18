@@ -6,19 +6,19 @@
  * Time: 21:17
  */
 
-use Shuchkin\Mail;
+use Shuchkin\SimpleMail;
 use PHPUnit\Framework\TestCase;
 
-class MailTest extends TestCase {
+class SimpleMailTest extends TestCase {
 
 	public function testSetReply() {
-		$m = new Mail();
-		$m->setReply('sergey.shuchkin@gmail.com', 'Sergey');
-		self::assertEquals( $m->getReplyName(), 'Sergey' );
+		$m = new SimpleMail();
+		$m->setReplyTo('sergey.shuchkin@gmail.com', 'Sergey');
+		self::assertEquals( $m->getReplyToName(), 'Sergey' );
 	}
 
 	public function testGetTransportParams() {
-		$m = new Mail('smtp', ['username' => 'test'] );
+		$m = new SimpleMail('smtp', [ 'username' => 'test'] );
 		$tp = $m->getTransportParams();
 		self::assertEquals( $tp, [
 			'host'     => 'localhost',
@@ -31,14 +31,14 @@ class MailTest extends TestCase {
 	}
 
 	public function testSetFrom() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setFrom('sergey.shuchkin@gmail.com', 'Sergey');
 		self::assertEquals( $m->getFromEmail(), 'sergey.shuchkin@gmail.com' );
 		self::assertEquals( $m->getFromName(), 'Sergey' );
 	}
 
 	public function testSend() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setFrom('example@example.com')
 			->setTo('sergey.shuchkin@gmail.com')
 			->setSubject('test_subject')
@@ -47,13 +47,13 @@ class MailTest extends TestCase {
 	}
 
 	public function testSetTextAndAddText() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setText('line 1')->addText('line 2');
 		self::assertEquals( $m->getText(), "line 1\r\nline 2" );
 	}
 
 	public function testSetPriority() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setPriority('urgent');
 		self::assertEquals( $m->getPriority(), 'urgent' );
 		$this->expectException( \InvalidArgumentException::class );
@@ -61,10 +61,10 @@ class MailTest extends TestCase {
 	}
 
 	public function testToArray() {
-		$m    = new Mail();
+		$m    = new SimpleMail();
 		$html = '<html><body><p>test</p></body></html>';
 		$m->setTo( 'sergey.shuchkin@gmail.com', 'Sergey' )
-		  ->setReply( 'segey@shuchkin.ru', 'S' )
+		  ->setReplyTo( 'segey@shuchkin.ru', 'S' )
 		  ->setFrom( 'example@example.com' )
 		  ->setHTML( $html, true )
 		  ->setPriority( 'urgent' );
@@ -88,26 +88,26 @@ class MailTest extends TestCase {
 	}
 
 	public function testSetHTML() {
-		$m    = new Mail();
+		$m    = new SimpleMail();
 		$m->setHTML( '<html><body><p>test</p></body></html>', true );
 		self::assertEquals( $m->getHTML(),'<html><body><p>test</p></body></html>');
 		self::assertEquals( $m->getText(), 'test' );
 	}
 
 	public function testSetSubject() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setSubject('TEST');
 		self::assertEquals( $m->getSubject(), 'TEST' );
 	}
 
 	public function testAttach() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->attach( 'image/test.jpg' );
 		self::assertEquals( $m->getAttachments(), ['test.jpg' => 'image/test.jpg'] );
 	}
 
 	public function testCompose() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setFrom('sergey.shuchkin@gmail.com');
 		$m2 = $m->compose('example@example.com', 'test_subj', 'text_message' );
 		self::assertEquals( $m2->getFromEmail(), 'sergey.shuchkin@gmail.com' );
@@ -118,7 +118,7 @@ class MailTest extends TestCase {
 	}
 
 	public function testSetTransport() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setTransport('smtp', ['host' => 'example.com']);
 		self::assertEquals( $m->getTransportParams(), [
 			'host' => 'example.com',
@@ -128,9 +128,20 @@ class MailTest extends TestCase {
 			'timeout' => 5,
 		] );
 	}
+	public function testSetCustomTransport() {
+		$mail = new Shuchkin\SimpleMail( function( $mail, $encoded ) {
+			print_r( $mail );
+			print_r( $encoded );
+		});
+		$mail->setFrom('example@example.com')
+		     ->setTo('sergey.shuchkin@gmail.com')
+		     ->setSubject('WARNING!')
+		     ->setText('SERVER DOWN!')
+		     ->send();
+	}
 
 	public function testFromArray() {
-		$m = new Mail();
+		$m = new SimpleMail();
 
 		$a = [
 			'fromEmail' => 'example@example.com',
@@ -144,7 +155,7 @@ class MailTest extends TestCase {
 
 	}
 	public function testFromJSON() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m2 = $m->fromJSON('{"toName":"Sergey","toEmail":"sergey.shuchkin@gmail.com","fromName":"Ex","fromEmail":"example@example.com","replyName":"","replyEmail":"","subject":"","text":"test text","html":"","attachments":[],"priority":"","customHeaders":[]}');
 		self::assertEquals( $m2->getFromEmail(), 'example@example.com' );
 		self::assertEquals( $m2->getFromName(), 'Ex' );
@@ -152,7 +163,7 @@ class MailTest extends TestCase {
 	}
 
 	public function testTo() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setFrom('sergey.shuchkin@gmail.com');
 		$m2 = $m->to('example@example.com');
 		self::assertEquals( $m2->getFromEmail(), 'sergey.shuchkin@gmail.com' );
@@ -160,7 +171,7 @@ class MailTest extends TestCase {
 	}
 
 	public function testToJSON() {
-		$m = new Mail();
+		$m = new SimpleMail();
 		$m->setFrom('example@example.com', 'Ex')
 			->setTo('sergey.shuchkin@gmail.com', 'Sergey')
 			->setText('test text');
