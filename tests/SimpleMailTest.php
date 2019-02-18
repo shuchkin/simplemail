@@ -129,9 +129,9 @@ class SimpleMailTest extends TestCase {
 		] );
 	}
 	public function testSetCustomTransport() {
-		$mail = new Shuchkin\SimpleMail( function( $mail, $encoded ) {
-			print_r( $mail );
-			print_r( $encoded );
+		$mail = new Shuchkin\SimpleMail( function( SimpleMail $mail, $encoded ) {
+			self::assertEquals( $mail->getSubject(), 'WARNING!' );
+			self::assertEquals( $encoded['subject'], '=?UTF-8?B?V0FSTklORyE=?=' );
 		});
 		$mail->setFrom('example@example.com')
 		     ->setTo('sergey.shuchkin@gmail.com')
