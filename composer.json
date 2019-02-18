@@ -1,0 +1,19 @@
+{
+    "name": "shuchkin/simplemail",
+    "description": "PHP mail/smtp composer and mailer class",
+    "keywords": ["smtp", "php", "mail"],
+    "homepage": "https://github.com/shuchkin/simplemail",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergey Shuchkin (SMSPILOT)",
+            "homepage": "https://github.com/shuchkin/"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0"
+    },
+    "autoload": {
+        "classmap": ["src/SimpleMail.php"]
+    }
+}
