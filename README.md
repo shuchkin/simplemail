@@ -92,6 +92,13 @@ Content-Type: text/plain; charset="UTF-8"
 )
 */
 ```
+## Export & import
+```
+SimpleMail::toArray() - export to array
+SimpleMail::fromArray( $data ) - import from assoc array (fabric)
+SimpleMail::toJSON() - export to JSON
+SimpleMail::fromJSON( $json ) - import from json (fabric)
+```
 
 ## Install
 
