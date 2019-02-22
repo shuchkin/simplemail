@@ -251,7 +251,7 @@ class SimpleMail {
 		if ( ! $this->text && ! $this->html ) {
 			throw new \InvalidArgumentException( 'Error: E-Mail message required!' );
 		}
-		if ( $this->priority && ! in_array( $this->priority, [ '', 'normal', 'urgent', 'non-urgent' ], true ) ) {
+		if ( $this->priority && ! in_array( $this->priority, [ 'normal', 'urgent', 'non-urgent' ], true ) ) {
 			throw new \InvalidArgumentException( "Priority possible values 'normal', 'urgent' or 'non-urgent'" );
 		}
 
