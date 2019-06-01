@@ -1,4 +1,6 @@
 # Shuchkin/SimpleMail 0.7.11
+[<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fshuchkin" />](https://www.patreon.com/shuchkin)
+
 A simple mail composer, phpmailer alternative, smtp client.
 
 ## Basic Usage
