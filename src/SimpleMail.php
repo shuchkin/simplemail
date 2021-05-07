@@ -2,9 +2,12 @@
 
 namespace Shuchkin;
 
+use InvalidArgumentException;
+
 class SimpleMail {
 	protected $toName;
 	protected $toEmail;
+	protected $ccEmail;
 	protected $fromName;
 	protected $fromEmail;
 	protected $replyName;
@@ -17,6 +20,7 @@ class SimpleMail {
 	protected $customHeaders;
 	protected $transport;
 	protected $transportParams;
+	protected $listener;
 
 	/**
 	 * Mail constructor.
@@ -28,6 +32,7 @@ class SimpleMail {
 	public function __construct( $transport = 'mail', array $transportParams = [] ) {
 		$this->toName        = '';
 		$this->toEmail       = '';
+		$this->ccEmail       = '';
 		$this->fromName      = '';
 		$this->fromEmail     = '';
 		$this->replyName     = '';
@@ -39,6 +44,13 @@ class SimpleMail {
 		$this->priority      = '';
 		$this->customHeaders = [];
 		$this->setTransport( $transport, $transportParams );
+	}
+
+	public function listen( callable $listener ) {
+		$old            = $this->listener;
+		$this->listener = $listener;
+
+		return $old;
 	}
 
 	/**
@@ -77,6 +89,7 @@ class SimpleMail {
 
 	/**
 	 * Set receiver address and name
+	 *
 	 * @param string|array $email Valid email address/addresses
 	 * @param string $name Valid recipient name
 	 *
@@ -127,6 +140,16 @@ class SimpleMail {
 		return $this->replyName;
 	}
 
+	public function getCcEmail() {
+		return $this->ccEmail;
+	}
+
+	public function setCcEmail( string $ccEmail ) {
+		$this->ccEmail = $ccEmail;
+
+		return $this;
+	}
+
 	public function getSubject() {
 		return $this->subject;
 	}
@@ -171,12 +194,13 @@ class SimpleMail {
 	}
 
 	/**
-	 * @param $priority string Can be 'normal', 'urgent', or 'non-urgent'
+	 * @param string $priority Can be 'normal', 'urgent', or 'non-urgent'
 	 *
 	 * @return $this
 	 */
-	public function setPriority( $priority ) {
+	public function setPriority( string $priority ) {
 		$this->priority = $priority;
+
 		return $this;
 	}
 
@@ -206,9 +230,9 @@ class SimpleMail {
 
 	public function setTransport( $transport, array $transportParams = [] ) {
 		if ( $transport === 'mail' ) {
-			$this->transport = 'mail';
+			$this->transport       = 'mail';
 			$this->transportParams = $transportParams;
-		} else if ( $transport === 'smtp' ) {
+		} elseif ( $transport === 'smtp' ) {
 			$this->transport       = 'smtp';
 			$this->transportParams = array_merge( [
 				'host'     => 'localhost',
@@ -217,11 +241,11 @@ class SimpleMail {
 				'password' => '',
 				'timeout'  => 5
 			], $transportParams );
-		} else if ( is_callable( $transport ) ) {
+		} elseif ( is_callable( $transport ) ) {
 			$this->transport       = $transport;
 			$this->transportParams = $transportParams;
 		} else {
-			throw new \InvalidArgumentException( 'Invalid transport (mail, smtp or callable supported).' );
+			throw new InvalidArgumentException( 'Invalid transport (mail, smtp or callable supported).' );
 		}
 
 		return $this;
@@ -237,22 +261,26 @@ class SimpleMail {
 	 */
 	public function send() {
 
+		if ( $this->listener ) {
+			call_user_func( $this->listener, 'snedmail from: ' . $this->fromEmail . ' to: ' . $this->toEmail . ' subject: ' . $this->subject );
+		}
+
 		$result = false;
 
 		if ( ! $this->toEmail ) {
-			throw new \InvalidArgumentException( 'Error: E-Mail to required!' );
+			throw new InvalidArgumentException( 'Error: E-Mail to required!' );
 		}
 		if ( ! $this->fromEmail ) {
-			throw new \InvalidArgumentException( 'Error: E-Mail from required!' );
+			throw new InvalidArgumentException( 'Error: E-Mail from required!' );
 		}
 		if ( ! $this->subject ) {
-			throw new \InvalidArgumentException( 'Error: E-Mail subject required!' );
+			throw new InvalidArgumentException( 'Error: E-Mail subject required!' );
 		}
 		if ( ! $this->text && ! $this->html ) {
-			throw new \InvalidArgumentException( 'Error: E-Mail message required!' );
+			throw new InvalidArgumentException( 'Error: E-Mail message required!' );
 		}
 		if ( $this->priority && ! in_array( $this->priority, [ 'normal', 'urgent', 'non-urgent' ], true ) ) {
-			throw new \InvalidArgumentException( "Priority possible values 'normal', 'urgent' or 'non-urgent'" );
+			throw new InvalidArgumentException( "Priority possible values 'normal', 'urgent' or 'non-urgent'" );
 		}
 
 		if ( strtoupper( 0 === strpos( PHP_OS, 'WIN' ) ) ) {
@@ -267,11 +295,11 @@ class SimpleMail {
 			$this->html = str_replace( "\r\n", "\n", $this->html );
 
 		}
-		$headers = 'X-Mailer: PHP/' . PHP_VERSION . $eol;
+		$headers = 'X-Mailer: ' . __CLASS__ . ' PHP/' . PHP_VERSION . $eol;
 
 		if ( is_array( $this->toEmail ) ) {
 			$to = implode( ', ', $this->toEmail );
-		} else if ( $this->toName ) {
+		} elseif ( $this->toName ) {
 			if ( preg_match( '/^[a-zA-Z0-9\-\. ]+$/', $this->toName ) ) {
 				$to = $this->toName . ' <' . $this->toEmail . '>';
 			} else {
@@ -282,6 +310,10 @@ class SimpleMail {
 		}
 
 		$to_header = 'To: ' . $to . $eol;
+
+		if ( $this->ccEmail ) {
+			$headers .= 'Cc: ' . $this->ccEmail . $eol;
+		}
 
 		if ( preg_match( '/^[a-zA-Z0-9\-\. ]+$/', $this->subject ) ) {
 			$subject = $this->subject;
@@ -441,7 +473,7 @@ class SimpleMail {
 				if ( ! empty( $_SERVER['SERVER_NAME'] ) ) {
 					$server = $_SERVER['SERVER_NAME'];
 				} else {
-					list( , $server ) = explode( '@', $this->fromEmail );
+					[ , $server ] = explode( '@', $this->fromEmail );
 				}
 
 				$lines = [ 'HELO ' . $server ];
@@ -517,22 +549,6 @@ class SimpleMail {
 		return $result;
 	}
 
-	public function toArray() {
-		return [
-			'toName'      => $this->toName,
-			'toEmail'     => $this->toEmail,
-			'fromName'    => $this->fromName,
-			'fromEmail'   => $this->fromEmail,
-			'replyName'   => $this->replyName,
-			'replyEmail'  => $this->replyEmail,
-			'subject'     => $this->subject,
-			'text'        => $this->text,
-			'html'        => $this->html,
-			'attachments' => $this->attachments,
-			'priority'    => $this->priority,
-			'customHeaders' => $this->customHeaders
-		];
-	}
 	public function fromArray( $a ) {
 		$m = clone $this;
 		foreach ( $a as $k => $v ) {
@@ -540,6 +556,7 @@ class SimpleMail {
 				$m->{$k} = $v;
 			}
 		}
+
 		return $m;
 	}
 
@@ -547,15 +564,33 @@ class SimpleMail {
 		return json_encode( $this->toArray() );
 	}
 
+	public function toArray() {
+		return [
+			'toName'        => $this->toName,
+			'toEmail'       => $this->toEmail,
+			'fromName'      => $this->fromName,
+			'fromEmail'     => $this->fromEmail,
+			'replyName'     => $this->replyName,
+			'replyEmail'    => $this->replyEmail,
+			'subject'       => $this->subject,
+			'text'          => $this->text,
+			'html'          => $this->html,
+			'attachments'   => $this->attachments,
+			'priority'      => $this->priority,
+			'customHeaders' => $this->customHeaders
+		];
+	}
+
 	public function fromJSON( $json ) {
 		$m = clone $this;
-		if ( $j = json_decode( $json ) ) {
+		if ( $j = json_decode( $json, true ) ) {
 			foreach ( $j as $k => $v ) {
 				if ( property_exists( $m, $k ) ) {
 					$m->{$k} = $v;
 				}
 			}
 		}
+
 		return $m;
 	}
 }
