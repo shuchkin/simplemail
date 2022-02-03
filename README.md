@@ -1,7 +1,7 @@
-# Shuchkin/SimpleMail 0.7.11
-[<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Fshieldsio-patreon.herokuapp.com%2Fshuchkin" />](https://www.patreon.com/shuchkin)
+# SimpleMail class 0.7.12
 
-A simple mail composer, phpmailer alternative, smtp client.
+A simple mail composer, phpmailer alternative, SMTP client.  
+UTF-8 html messages and attachements supported.
 
 ## Basic Usage
 ```php
@@ -12,6 +12,18 @@ $mail->setFrom('example@example.com')
 	->setText('Hi, Sergey!')
 	->send();
 ```
+## Install
+
+The recommended way to install this library is [through Composer](https://getcomposer.org).
+[New to Composer?](https://getcomposer.org/doc/00-intro.md)
+
+This will install the latest supported version:
+
+```bash
+$ composer require shuchkin/simplemail
+```
+or download class [here](https://github.com/shuchkin/simplemail/blob/master/src/SimpleMail.php)
+
 ## Fabric
 ```php
 // setup mail
@@ -25,7 +37,7 @@ $mail->to('sergey.shuchkin@gmail.com')
 	->send();
 
 // fabric method compose( $toEmail, $subject, $text )	
-$mail->compose('admin@example.com', 'New Account', 'http://example.com/useradmin/123')->send();
+$mail->compose('admin@example.com', 'New Account', 'https://example.com/useradmin/123')->send();
 ```
 ## SMTP
 ```php
@@ -102,15 +114,6 @@ SimpleMail::toJSON() - export to JSON
 SimpleMail::fromJSON( $json ) - import from json (fabric)
 ```
 
-## Install
-
-The recommended way to install this library is [through Composer](https://getcomposer.org).
-[New to Composer?](https://getcomposer.org/doc/00-intro.md)
-
-This will install the latest supported version:
-
-```bash
-$ composer require shuchkin/simplemail
-```
 ## History
-2019-02-18 v0.7.11 Initial release 
+0.7.12 (2022-02-04) PHP/5.3 support  
+0.7.11 (2019-02-18) Initial release 
