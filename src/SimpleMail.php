@@ -7,22 +7,22 @@ use RuntimeException;
 
 class SimpleMail
 {
-    protected $toName;
-    protected $toEmail;
-    protected $ccEmail;
-    protected $fromName;
-    protected $fromEmail;
-    protected $replyName;
-    protected $replyEmail;
-    protected $subject;
-    protected $text;
-    protected $html;
-    protected $attachments;
-    protected $priority;
-    protected $customHeaders;
-    protected $transport;
-    protected $transportParams;
-    protected $listener;
+    public $toName;
+    public $toEmail;
+    public $ccEmail;
+    public $fromName;
+    public $fromEmail;
+    public $replyName;
+    public $replyEmail;
+    public $subject;
+    public $text;
+    public $html;
+    public $attachments;
+    public $priority;
+    public $customHeaders;
+    public $transport;
+    public $transportParams;
+    public $listener;
 
     /**
      * Mail constructor.

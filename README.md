@@ -1,4 +1,4 @@
-# SimpleMail class 0.7.12
+# SimpleMail class 0.7.13
 
 A simple mail composer, phpmailer alternative, SMTP client.  
 UTF-8 html messages and attachements supported.
@@ -115,5 +115,6 @@ SimpleMail::fromJSON( $json ) - import from json (fabric)
 ```
 
 ## History
+0.7.13 (2023-01-15) all properties is public now 
 0.7.12 (2022-02-04) PHP/5.3 support  
 0.7.11 (2019-02-18) Initial release 

@@ -1,4 +1,5 @@
-<?php /** @noinspection PhpLanguageLevelInspection */
+<?php /** @noinspection ForgottenDebugOutputInspection */
+/** @noinspection PhpLanguageLevelInspection */
 /**
  * Created by PhpStorm.
  * User: Serg
@@ -168,5 +169,19 @@ class SimpleMailTest extends TestCase {
 		self::assertEquals( 'sergey.shuchkin@gmail.com', $m2->getFromEmail());
 		self::assertEquals( 'example@example.com', $m2->getToEmail());
 	}
+    public function testGet() {
+        $m = new SimpleMail();
+        $m->listen('print_r');
+        self::assertEquals('', $m->getToName());
+        self::assertEquals('', $m->getReplyToEmail());
+        self::assertEquals('', $m->getReplyToName());
+        $m->setCcEmail('1@example.com');
+        self::assertEquals('1@example.com', $m->getCcEmail());
+        $m->setCustomHeaders(['X-Mailer' => 'Me']);
+        self::assertEquals(['X-Mailer' => 'Me'], $m->getCustomHeaders());
+        self::assertEquals('mail', $m->getTransport());
+        self::assertEquals('{"toName":"","toEmail":"","fromName":"","fromEmail":"","replyName":"","replyEmail":"","subject":"","text":"","html":"","attachments":[],"priority":"","customHeaders":{"X-Mailer":"Me"}}', $m->toJSON());
+
+    }
 
 }
